@@ -1,0 +1,22 @@
+plugins {
+  id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+apply plugin: 'eclipse'
+apply plugin: 'java'
+apply plugin: 'application'
+mainClassName = 'de.adrodoc.game.of.life.GameOfLifeMain'
+
+repositories {
+  mavenCentral()
+}
+
+wrapper {
+  gradleVersion = '6.0'
+}
+java {
+  sourceCompatibility = JavaVersion.VERSION_11
+}
+javafx {
+  version = "11"
+  modules = [ 'javafx.controls' ]
+}
