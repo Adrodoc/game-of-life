@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class GridPartTask implements Callable<Void> {
   private final CyclicBarrier barrier;
-  private AtomicReference<Grid> grid;
+  private final AtomicReference<Grid> grid;
 
   public GridPartTask(CyclicBarrier barrier, AtomicReference<Grid> grid) {
     this.barrier = requireNonNull(barrier, "barrier");

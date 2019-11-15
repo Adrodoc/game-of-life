@@ -15,6 +15,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -24,6 +25,8 @@ public class GameOfLife extends Application {
   public static void main(String[] args) {
     launch(args);
   }
+
+  private static final KeyCodeCombination TOGGLE_FULLSCREEN = new KeyCodeCombination(KeyCode.F11);
 
   private final ExecutorService executor = Executors.newCachedThreadPool(new ThreadFactory() {
     private final ThreadFactory delegate = Executors.defaultThreadFactory();
@@ -55,12 +58,12 @@ public class GameOfLife extends Application {
     canvas.heightProperty().bind(root.heightProperty());
     canvas.widthProperty().bind(root.widthProperty());
     primaryStage.setScene(new Scene(root, 500, 500));
-    primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, e -> {
-      if (e.getCode() == KeyCode.F11) {
+    primaryStage.setFullScreen(true);
+    primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
+      if (TOGGLE_FULLSCREEN.match(event)) {
         primaryStage.setFullScreen(!primaryStage.isFullScreen());
       }
     });
-    primaryStage.setFullScreen(true);
     primaryStage.show();
 
     BlockingQueue<Grid> queue = new ArrayBlockingQueue<>(5);
