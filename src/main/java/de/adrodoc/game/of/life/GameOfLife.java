@@ -1,5 +1,7 @@
 package de.adrodoc.game.of.life;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CyclicBarrier;
@@ -38,6 +40,7 @@ public class GameOfLife extends Application {
       return thread;
     }
   });
+  private final Queue<Grid> gridCache = new ArrayDeque<>();
   private final Canvas canvas;
 
   public GameOfLife() {
@@ -69,15 +72,11 @@ public class GameOfLife extends Application {
     BlockingQueue<Grid> queue = new ArrayBlockingQueue<>(5);
 
     // AtomicLong time = new AtomicLong();
-    int width = getWidth();
-    int height = getHeight();
-    // Grid initialGrid = Grids.loadGosperGliderGun(width, height);
-    Grid initialGrid = Grids.grid(width, height, 2);
-    // Grid initialGrid = Grids.random(width, height);
+    Grid initialGrid = getInitialGrid();
     AtomicReference<Grid> gridRef = new AtomicReference<>(initialGrid);
     int threadCount = 8;
     CyclicBarrier barrier = new CyclicBarrier(threadCount, () -> {
-      Grid newGrid = new Grid(getWidth(), getHeight());
+      Grid newGrid = provideGrid(getWidth(), getHeight());
       Grid oldGrid = gridRef.getAndSet(newGrid);
 
       // System.out.println("queue size: " + queue.size());
@@ -109,9 +108,29 @@ public class GameOfLife extends Application {
           }
         });
         semaphore.acquire();
+        gridCache.add(grid);
         // System.out.println("rendering took " + (System.currentTimeMillis() - start) + "ms");
       }
     });
+  }
+
+  private Grid provideGrid(int width, int height) {
+    while (!gridCache.isEmpty()) {
+      Grid grid = gridCache.remove();
+      if (grid.getWidth() == width && grid.getHeight() == height) {
+        return grid;
+      }
+    }
+    return new Grid(width, height);
+  }
+
+  private Grid getInitialGrid() {
+    int width = getWidth();
+    int height = getHeight();
+    // Grid initialGrid = Grids.loadGosperGliderGun(width, height);
+    Grid initialGrid = Grids.grid(width, height, 2);
+    // Grid initialGrid = Grids.random(width, height);
+    return initialGrid;
   }
 
   private void paintGrid(Grid grid) {
