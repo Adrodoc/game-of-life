@@ -3,12 +3,12 @@ package de.adrodoc.game.of.life;
 public class Grid {
   private final int width;
   private final int height;
-  private final boolean[] data;
+  private final boolean[] alive;
 
   public Grid(int width, int height) {
     this.width = width;
     this.height = height;
-    data = new boolean[width * height];
+    alive = new boolean[width * height];
   }
 
   public int getWidth() {
@@ -22,7 +22,7 @@ public class Grid {
   public boolean isAlive(int x, int y) {
     if (isXInRange(x) && isYInRange(y)) {
       int index = calculateIndex(x, y);
-      return data[index];
+      return alive[index];
     } else {
       return false;
     }
@@ -38,11 +38,11 @@ public class Grid {
 
   public void setAlive(int x, int y, boolean alive) {
     int index = calculateIndex(x, y);
-    data[index] = alive;
+    this.alive[index] = alive;
   }
 
   private int calculateIndex(int x, int y) {
-    return x + y * width;
+    return x * height + y;
   }
 
   public void updateAlive(int x, int y, Grid previous) {
