@@ -128,8 +128,8 @@ public class GameOfLife extends Application {
     int width = getWidth();
     int height = getHeight();
     // Grid initialGrid = Grids.loadGosperGliderGun(width, height);
-    Grid initialGrid = Grids.grid(width, height, 2);
-    // Grid initialGrid = Grids.random(width, height);
+    // Grid initialGrid = Grids.grid(width, height, 2);
+    Grid initialGrid = Grids.random(width, height);
     return initialGrid;
   }
 
@@ -142,7 +142,9 @@ public class GameOfLife extends Application {
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         if (grid.isAlive(x, y)) {
-          pixelWriter.setColor(x, y, Color.BLACK);
+          int generation = grid.getGeneration(x, y);
+          Color color = Color.hsb(generation % 360, 1, 1);
+          pixelWriter.setColor(x, y, color);
         }
       }
     }
