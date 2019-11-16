@@ -5,6 +5,7 @@ public class Grid {
   private final int height;
   private final boolean[] alive;
   private final int[] generation;
+  private int totalGeneration;
 
   public Grid(int width, int height) {
     this.width = width;
@@ -19,6 +20,10 @@ public class Grid {
 
   public int getHeight() {
     return height;
+  }
+
+  public int getTotalGeneration() {
+    return totalGeneration;
   }
 
   public boolean isAlive(int x, int y) {
@@ -62,6 +67,7 @@ public class Grid {
   }
 
   public void updateAlive(int x, int y, Grid previous) {
+    totalGeneration = previous.totalGeneration + 1;
     boolean wasAlive = previous.isAlive(x, y);
     int neighbours = previous.getNeighbourCount(x, y);
     boolean alive = willBeAlive(wasAlive, neighbours);

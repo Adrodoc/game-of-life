@@ -127,24 +127,44 @@ public class GameOfLife extends Application {
   private Grid getInitialGrid() {
     int width = getWidth();
     int height = getHeight();
-    // Grid initialGrid = Grids.loadGosperGliderGun(width, height);
-    // Grid initialGrid = Grids.grid(width, height, 2);
-    Grid initialGrid = Grids.random(width, height);
+    Grid initialGrid = new Grid(width, height);
+    for (int x = 0; x < width - 2; x++) {
+      for (int y = 0; y < height - 2; y++) {
+        if (x % 3 == 0 ^ y % 3 == 0) {
+          initialGrid.setAlive(x, y, true);
+        }
+      }
+    }
+    int xCenter = width / 2;
+    int yCenter = height / 2;
+    int r = 1;
+    for (int x = xCenter - r; x <= xCenter + r; x++) {
+      for (int y = yCenter - r; y <= yCenter + r; y++) {
+        initialGrid.setAlive(x, y, true);
+      }
+    }
     return initialGrid;
   }
 
   private void paintGrid(Grid grid) {
     GraphicsContext gc = canvas.getGraphicsContext2D();
-    gc.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
+    gc.setFill(Color.BLACK);
+    gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     PixelWriter pixelWriter = gc.getPixelWriter();
+    int totalGeneration = grid.getTotalGeneration();
     int width = grid.getWidth();
     int height = grid.getHeight();
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
-        if (grid.isAlive(x, y)) {
-          int generation = grid.getGeneration(x, y);
-          Color color = Color.hsb(generation % 360, 1, 1);
-          pixelWriter.setColor(x, y, color);
+        int generation = grid.getGeneration(x, y);
+        if (generation < totalGeneration - 5) {
+          if (grid.isAlive(x, y)) {
+            double hue = (double) generation / 10;
+            double saturation = 1;
+            double brightness = (double) generation / totalGeneration;
+            Color color = Color.hsb(hue, saturation, brightness);
+            pixelWriter.setColor(x, y, color);
+          }
         }
       }
     }
