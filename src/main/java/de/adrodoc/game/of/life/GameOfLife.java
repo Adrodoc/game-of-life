@@ -1,5 +1,9 @@
 package de.adrodoc.game.of.life;
 
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -10,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.imageio.ImageIO;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.Scene;
@@ -22,6 +27,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 
 public class GameOfLife extends Application {
   public static void main(String[] args) {
@@ -47,6 +53,8 @@ public class GameOfLife extends Application {
     canvas = new Canvas();
   }
 
+  private static final Integer MAX_GENERATION = 1000;
+
   private int getHeight() {
     return (int) canvas.getHeight();
   }
@@ -62,12 +70,15 @@ public class GameOfLife extends Application {
     canvas.widthProperty().bind(root.widthProperty());
     primaryStage.setScene(new Scene(root, 500, 500));
     primaryStage.setFullScreen(true);
+    primaryStage.fullScreenExitHintProperty().set("");
     primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, event -> {
       if (TOGGLE_FULLSCREEN.match(event)) {
         primaryStage.setFullScreen(!primaryStage.isFullScreen());
       }
     });
     primaryStage.show();
+    primaryStage.centerOnScreen();
+    primaryStage.setY(0);
 
     BlockingQueue<Grid> queue = new ArrayBlockingQueue<>(5);
 
@@ -84,6 +95,9 @@ public class GameOfLife extends Application {
         queue.put(oldGrid);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
+      }
+      if (MAX_GENERATION != null && MAX_GENERATION == oldGrid.getTotalGeneration()) {
+        throw new RuntimeException();
       }
 
       // long now = System.currentTimeMillis();
@@ -137,7 +151,7 @@ public class GameOfLife extends Application {
     }
     int xCenter = width / 2;
     int yCenter = height / 2;
-    int r = 1;
+    int r = 9;
     for (int x = xCenter - r; x <= xCenter + r; x++) {
       for (int y = yCenter - r; y <= yCenter + r; y++) {
         initialGrid.setAlive(x, y, true);
@@ -147,25 +161,54 @@ public class GameOfLife extends Application {
   }
 
   private void paintGrid(Grid grid) {
+    int totalGeneration = grid.getTotalGeneration();
+    int width = grid.getWidth();
+    int height = grid.getHeight();
+
+    Window window = canvas.getScene().getWindow();
+    if (window instanceof Stage) {
+      Stage stage = (Stage) window;
+      stage.setTitle("Generation " + totalGeneration + " " + grid.getWidth() + "x"
+          + grid.getHeight() + " Pixel");
+    }
+
     GraphicsContext gc = canvas.getGraphicsContext2D();
     gc.setFill(Color.BLACK);
     gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
     PixelWriter pixelWriter = gc.getPixelWriter();
-    int totalGeneration = grid.getTotalGeneration();
-    int width = grid.getWidth();
-    int height = grid.getHeight();
+
+    boolean saveAsPng = totalGeneration % 100 == 0;
+    // MAX_GENERATION != null && MAX_GENERATION == totalGeneration;
+    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    Graphics2D g = image.createGraphics();
+    g.setBackground(java.awt.Color.BLACK);
+
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
         int generation = grid.getGeneration(x, y);
         if (generation < totalGeneration - 5) {
           if (grid.isAlive(x, y)) {
-            double hue = (double) generation / 10;
+            double hue = generation / 10 + 340;
             double saturation = 1;
             double brightness = (double) generation / totalGeneration;
             Color color = Color.hsb(hue, saturation, brightness);
             pixelWriter.setColor(x, y, color);
+
+            if (saveAsPng) {
+              java.awt.Color color2 = new java.awt.Color((float) color.getRed(),
+                  (float) color.getGreen(), (float) color.getBlue());
+              g.setColor(color2);
+              g.fillRect(x, y, 1, 1);
+            }
           }
         }
+      }
+    }
+    if (saveAsPng) {
+      try {
+        ImageIO.write(image, "png", new File(totalGeneration + ".png"));
+      } catch (IOException e) {
+        e.printStackTrace();
       }
     }
   }
