@@ -151,12 +151,24 @@ public class GameOfLife extends Application {
     }
     int xCenter = width / 2;
     int yCenter = height / 2;
-    int r = 9;
-    for (int x = xCenter - r; x <= xCenter + r; x++) {
-      for (int y = yCenter - r; y <= yCenter + r; y++) {
+    int r = 15;
+    // for (int x = xCenter - r; x <= xCenter + r; x++) {
+    // for (int y = yCenter - r; y <= yCenter + r; y++) {
+    // initialGrid.setAlive(x, y, true);
+    // }
+    // }
+    int cornerR = 4;
+    for (int x = 0; x < cornerR; x++) {
+      for (int y = 0; y < cornerR; y++) {
         initialGrid.setAlive(x, y, true);
       }
     }
+    for (int x = width - 1; x >= width - cornerR; x--) {
+      for (int y = height - 1; y >= height - cornerR; y--) {
+        initialGrid.setAlive(x, y, true);
+      }
+    }
+
     return initialGrid;
   }
 
@@ -188,7 +200,7 @@ public class GameOfLife extends Application {
         int generation = grid.getGeneration(x, y);
         if (generation < totalGeneration - 5) {
           if (grid.isAlive(x, y)) {
-            double hue = generation / 10 + 340;
+            double hue = -generation / 10 + 190;
             double saturation = 1;
             double brightness = (double) generation / totalGeneration;
             Color color = Color.hsb(hue, saturation, brightness);
